@@ -12,9 +12,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        version: [23.05]
     
     steps:
     - name: Checkout code
@@ -43,15 +40,14 @@ jobs:
       run: |
         cp -r luci-app-themeswitch ./sdk/package/
 
-    - name: Build OpenWrt
+    - name: Build luci-app-themeswitch package
       run: |
         cd sdk
         ./scripts/feeds install luci-app-themeswitch
-        make defconfig
-        make -j$(nproc)
+        make package/luci-app-themeswitch/compile V=s
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: openwrt-build
-        path: sdk/bin/
+        name: luci-app-themeswitch-ipk
+        path: sdk/bin/packages/x86_64/base/luci-app-themeswitch*.ipk
