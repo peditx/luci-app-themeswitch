@@ -25,7 +25,7 @@
 <% include("footer") %>
 
 <style>
-    /* حذف بکگراند و استفاده از فضای شفاف */
+
     body, html {
         margin: 0;
         padding: 0;
@@ -35,7 +35,7 @@
         overflow-x: hidden; /* جلوگیری از اسکرول افقی */
     }
 
-    /* کانتینر اصلی */
+
     .luci-container {
         display: flex;
         justify-content: center;
@@ -46,7 +46,7 @@
         z-index: 1; /* اطمینان از اینکه محتوای صفحه از منو بالاتر است */
     }
 
-    /* محتوا */
+
     .content {
         width: 100%;
         max-width: 600px;
@@ -64,7 +64,7 @@
         color: var(--primary-color, #333);
     }
 
-    /* گزینه‌های تم */
+
     .theme-options {
         display: flex;
         justify-content: center;
@@ -102,7 +102,7 @@
         transform: scale(1.05);
     }
 
-    /* دکمه ارسال */
+
     .submit-button {
         margin-top: 20px;
         padding: 10px 20px;
@@ -119,7 +119,7 @@
         background-color: #45a049;
     }
 
-    /* واکنش‌گرایی برای موبایل */
+
     @media (max-width: 600px) {
         .theme-options {
             flex-direction: column;
@@ -139,12 +139,12 @@
             width: 100%;
         }
 
-        /* منوی کشویی */
+
         .luci-container {
-            padding-top: 50px; /* فاصله از بالای صفحه برای منوی کشویی */
+            padding-top: 50px;
         }
 
-        /* نمایش منو در موبایل */
+
         #luci-sidebar {
             display: block;
             position: fixed;
@@ -156,7 +156,7 @@
             z-index: 9999;
         }
 
-        /* منوی کشویی */
+
         #luci-sidebar ul {
             list-style: none;
             padding: 0;
@@ -192,7 +192,7 @@
         selectedOption.querySelector('input[type="radio"]').checked = true;
     }
 
-    // نمایش منوی کشویی در موبایل
+
     function toggleSidebar() {
         const sidebar = document.getElementById('luci-sidebar');
         sidebar.style.display = sidebar.style.display === 'block' ? 'none' : 'block';
