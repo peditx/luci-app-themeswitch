@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        version: [21.02, 22.03, 22.05, master]
+        version: [22.03, 23.05, 24.10, master]
     
     steps:
     - name: Checkout code
