@@ -40,10 +40,14 @@ jobs:
       run: |
         cp -r luci-app-themeswitch ./sdk/package/
 
+    - name: Set default configuration
+      run: |
+        cd sdk
+        make defconfig
+
     - name: Build luci-app-themeswitch package
       run: |
         cd sdk
-        ./scripts/feeds install luci-app-themeswitch
         make package/luci-app-themeswitch/compile V=s
 
     - name: Upload build artifacts
