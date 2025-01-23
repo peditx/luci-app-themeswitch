@@ -1,0 +1,54 @@
+name: Build luci-app-themeswitch for OpenWrt
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        version: [19.07, 21.02, 22.03, master]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up OpenWrt build environment
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential ccache git subversion libncurses5-dev zlib1g-dev gawk flex quilt xsltproc libssl-dev wget unzip python3-distutils
+
+    - name: Clone OpenWrt repository
+      run: |
+        git clone https://github.com/openwrt/openwrt.git
+        cd openwrt
+        git checkout ${{ matrix.version }}
+    
+    - name: Copy luci-app-themeswitch package
+      run: |
+        cp -r ../luci-app-themeswitch openwrt/package/
+    
+    - name: Update feeds
+      run: |
+        cd openwrt
+        ./scripts/feeds update -a
+        ./scripts/feeds install -a
+
+    - name: Build OpenWrt
+      run: |
+        cd openwrt
+        ./scripts/feeds install luci-app-themeswitch
+        make defconfig
+        make -j$(nproc)
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: openwrt-build
+        path: openwrt/bin/
