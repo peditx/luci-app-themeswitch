@@ -1,24 +1,33 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=luci-app-themeswitch
-PKG_VERSION:=1.0
 PKG_RELEASE:=1
 
-PKG_MAINTAINER:=PeDitX <https://t.me/peditx>
-PKG_LICENSE:=GPL-2.0
+LUCI_TITLE:=Theme Switch
+LUCI_DEPENDS:=+luci-base
 
-LUCI_TITLE:=Theme Switcher for LuCI
-LUCI_DEPENDS:=+luci
+PKG_MAINTAINER:= PeDitX <https://t.me/peditx>
+PKG_LICENSE:=GPL-3.0
 
-LUCI_FILES:= \
-    /usr/lib/lua/luci/controller/themes.lua \
-    /usr/lib/lua/luci/view/themes/index.htm
+include $(INCLUDE_DIR)/package.mk
 
-define Package/$(PKG_NAME)/install
-	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/controller
-	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/view/themes
-	$(CP) ./files/themes.lua $(1)/usr/lib/lua/luci/controller/
-	$(CP) ./files/index.htm $(1)/usr/lib/lua/luci/view/themes/
+define Package/luci-app-themeswitch
+  SECTION:=luci
+  CATEGORY:=LuCI
+  TITLE=$(LUCI_TITLE)
+  DEPENDS:=$(LUCI_DEPENDS)
 endef
 
-$(eval $(call BuildPackage,$(PKG_NAME)))
+define Build/Compile
+  # Nothing to compile, just copy the files
+endef
+
+define Package/luci-app-themeswitch/install
+  # Copy files from the 'files' directory to the correct locations
+  $(INSTALL_DIR) $(1)/usr/lib/lua/luci/controller
+  $(INSTALL_BIN) ./files/themes.lua $(1)/usr/lib/lua/luci/controller
+  $(INSTALL_DIR) $(1)/usr/lib/lua/luci/view/themes
+  $(INSTALL_DATA) ./files/index.htm $(1)/usr/lib/lua/luci/view/themes
+endef
+
+$(eval $(call BuildPackage,luci-app-themeswitch))
