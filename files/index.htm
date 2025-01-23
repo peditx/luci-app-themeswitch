@@ -1,0 +1,201 @@
+<% include("header") %>
+
+<!-- Container without background -->
+<div class="luci-container">
+    <div class="content">
+        <h1>Select a Theme</h1>
+        <form method="post" action="<%= luci.dispatcher.build_url('admin', 'themes') %>">
+            <div class="theme-options">
+                <div class="theme-option <%= current_theme:find('peditx') and 'selected' or '' %>" onclick="selectTheme('peditx')">
+                    <img src="/luci-static/peditx/preview.jpg" alt="PeDitX Theme">
+                    <label>PeDitX Theme</label>
+                    <input type="radio" id="theme-peditx" name="theme" value="peditx" <%= current_theme:find('peditx') and 'checked' or '' %>>
+                </div>
+                <div class="theme-option <%= current_theme:find('carbonpx') and 'selected' or '' %>" onclick="selectTheme('carbonpx')">
+                    <img src="/luci-static/carbonpx/preview.jpg" alt="CarbonPX Theme">
+                    <label>CarbonPX Theme</label>
+                    <input type="radio" id="theme-carbonpx" name="theme" value="carbonpx" <%= current_theme:find('carbonpx') and 'checked' or '' %>>
+                </div>
+            </div>
+            <button type="submit" class="submit-button">Set Theme</button>
+        </form>
+    </div>
+</div>
+
+<% include("footer") %>
+
+<style>
+    /* حذف بکگراند و استفاده از فضای شفاف */
+    body, html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        font-family: var(--font-family, Arial, sans-serif);
+        background-color: transparent; /* بکگراند شفاف */
+        overflow-x: hidden; /* جلوگیری از اسکرول افقی */
+    }
+
+    /* کانتینر اصلی */
+    .luci-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        padding-top: 60px; /* تنظیمات بر اساس هدر */
+        position: relative;
+        z-index: 1; /* اطمینان از اینکه محتوای صفحه از منو بالاتر است */
+    }
+
+    /* محتوا */
+    .content {
+        width: 100%;
+        max-width: 600px;
+        padding: 20px;
+        background-color: rgba(255, 255, 255, 0.8); /* بکگراند نیمه شفاف */
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        text-align: center;
+        z-index: 2; /* اطمینان از اینکه محتوا در لایه بالاتر از منو قرار دارد */
+    }
+
+    h1 {
+        font-size: 22px;
+        margin-bottom: 20px;
+        color: var(--primary-color, #333);
+    }
+
+    /* گزینه‌های تم */
+    .theme-options {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .theme-option {
+        width: 140px;
+        cursor: pointer;
+        border: 2px solid transparent;
+        border-radius: 10px;
+        overflow: hidden;
+        transition: border-color 0.3s ease, transform 0.2s ease;
+        background-color: rgba(255, 255, 255, 0.6);
+        padding: 10px;
+        text-align: center;
+    }
+
+    .theme-option img {
+        width: 100%;
+        height: auto;
+        border-radius: 5px;
+    }
+
+    .theme-option label {
+        display: block;
+        margin-top: 10px;
+        font-size: 14px;
+        color: var(--text-color, #333);
+    }
+
+    .theme-option.selected {
+        border-color: #4CAF50;
+        transform: scale(1.05);
+    }
+
+    /* دکمه ارسال */
+    .submit-button {
+        margin-top: 20px;
+        padding: 10px 20px;
+        font-size: 16px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .submit-button:hover {
+        background-color: #45a049;
+    }
+
+    /* واکنش‌گرایی برای موبایل */
+    @media (max-width: 600px) {
+        .theme-options {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .theme-option {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            font-size: 20px;
+        }
+
+        .submit-button {
+            width: 100%;
+        }
+
+        /* منوی کشویی */
+        .luci-container {
+            padding-top: 50px; /* فاصله از بالای صفحه برای منوی کشویی */
+        }
+
+        /* نمایش منو در موبایل */
+        #luci-sidebar {
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 250px;
+            height: 100%;
+            background-color: #333;
+            z-index: 9999;
+        }
+
+        /* منوی کشویی */
+        #luci-sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        #luci-sidebar li {
+            padding: 15px;
+            border-bottom: 1px solid #444;
+        }
+
+        #luci-sidebar li a {
+            color: #fff;
+            text-decoration: none;
+        }
+
+        #luci-sidebar .submenu {
+            display: none;
+        }
+
+        #luci-sidebar li:hover .submenu {
+            display: block;
+        }
+    }
+</style>
+
+<script>
+    function selectTheme(themeId) {
+        document.querySelectorAll('.theme-option').forEach(option => {
+            option.classList.remove('selected');
+        });
+        const selectedOption = document.querySelector(`input[value="${themeId}"]`).closest('.theme-option');
+        selectedOption.classList.add('selected');
+        selectedOption.querySelector('input[type="radio"]').checked = true;
+    }
+
+    // نمایش منوی کشویی در موبایل
+    function toggleSidebar() {
+        const sidebar = document.getElementById('luci-sidebar');
+        sidebar.style.display = sidebar.style.display === 'block' ? 'none' : 'block';
+    }
+</script>
+
