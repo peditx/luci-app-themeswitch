@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        version: [22.03, 23.05, 24.10, master]
+        version: [23.05]
     
     steps:
     - name: Checkout code
@@ -25,25 +25,23 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y build-essential ccache git subversion libncurses5-dev zlib1g-dev gawk flex quilt xsltproc libssl-dev wget unzip python3 python3-venv
 
-    - name: Clone OpenWrt repository
+    - name: Set up OpenWrt SDK
       run: |
-        git clone https://github.com/openwrt/openwrt.git
-        cd openwrt
-        git checkout ${{ matrix.version }}
-    
-    - name: Copy luci-app-themeswitch package
-      run: |
-        cp -r ../luci-app-themeswitch openwrt/package/
-    
-    - name: Update feeds
-      run: |
-        cd openwrt
+        wget https://downloads.openwrt.org/releases/23.05.0/targets/x86/64/openwrt-sdk-23.05.0-x86-64_gcc-12.3.0_musl.Linux-x86_64.tar.xz
+        mkdir sdk && tar -xJf openwrt-sdk-23.05.0-x86-64_gcc-12.3.0_musl.Linux-x86_64.tar.xz -C sdk --strip-components=1
+        cd sdk
+        echo "src-git packages https://github.com/openwrt/packages.git" > feeds.conf.default
+        echo "src-git luci https://github.com/openwrt/luci.git" >> feeds.conf.default
         ./scripts/feeds update -a
         ./scripts/feeds install -a
 
+    - name: Copy luci-app-themeswitch package
+      run: |
+        cp -r ../luci-app-themeswitch sdk/package/
+
     - name: Build OpenWrt
       run: |
-        cd openwrt
+        cd sdk
         ./scripts/feeds install luci-app-themeswitch
         make defconfig
         make -j$(nproc)
@@ -52,4 +50,4 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: openwrt-build
-        path: openwrt/bin/
+        path: sdk/bin/
