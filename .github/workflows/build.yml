@@ -35,9 +35,13 @@ jobs:
         ./scripts/feeds update -a
         ./scripts/feeds install -a
 
+    - name: Clone luci-app-themeswitch repository
+      run: |
+        git clone https://github.com/peditx/luci-app-themeswitch.git
+
     - name: Copy luci-app-themeswitch package
       run: |
-        cp -r ../luci-app-themeswitch ./sdk/package/
+        cp -r luci-app-themeswitch ./sdk/package/
 
     - name: Build OpenWrt
       run: |
