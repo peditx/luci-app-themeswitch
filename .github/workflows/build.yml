@@ -37,7 +37,7 @@ jobs:
 
     - name: Copy luci-app-themeswitch package
       run: |
-        cp -r ../luci-app-themeswitch sdk/package/
+        cp -r ../luci-app-themeswitch ./sdk/package/
 
     - name: Build OpenWrt
       run: |
