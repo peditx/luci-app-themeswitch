@@ -24,9 +24,9 @@ endef
 
 define Package/luci-app-themeswitch/install
   # Copy files from the 'files' directory to the correct locations
-  $(INSTALL_DIR) $(1)/usr/lib/lua/luci/controller
+	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/controller
 	$(INSTALL_BIN) ./files/themes.lua $(1)/usr/lib/lua/luci/controller
-  $(INSTALL_DIR) $(1)/usr/lib/lua/luci/view/themes
+	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/view/themes
 	$(INSTALL_DATA) ./files/index.htm $(1)/usr/lib/lua/luci/view/themes
 endef
 
