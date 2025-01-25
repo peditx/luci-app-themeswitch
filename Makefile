@@ -5,7 +5,7 @@ PKG_RELEASE:=1
 PKGARCH:=all
 
 LUCI_TITLE:=Theme Switch
-#LUCI_DEPENDS:=+luci-base
+LUCI_DEPENDS:=+luci-base
 
 PKG_MAINTAINER:=Your Name <your.email@example.com>
 PKG_LICENSE:=GPL-3.0
