@@ -1,4 +1,4 @@
-name: Build and Release luci-theme-carbonpx
+name: Build and Release luci-app-themeswitch
 
 on:
   push:
@@ -33,20 +33,20 @@ jobs:
           cd sdk
           sed -i '/CONFIG_PACKAGE_lucihttp/d' .config
 
-      - name: Add luci-theme-carbonpx package
+      - name: Add luci-app-themeswitch package
         run: |
           cd sdk/package
-          git clone https://github.com/peditx/luci-theme-carbonpx
+          git clone https://github.com/peditx/luci-app-themeswitch
           cd ..
-          echo "CONFIG_PACKAGE_luci-theme-carbonpx=m" >> .config
+          echo "CONFIG_PACKAGE_luci-app-themeswitch=m" >> .config
 
-      - name: Build luci-theme-carbonpx
+      - name: Build luci-app-themeswitch
         run: |
           cd sdk
           make defconfig
-          make package/luci-theme-carbonpx/compile -j1 V=sc
+          make package/luci-app-themeswitch/compile -j1 V=sc
 
-      - name: Save luci-theme-carbonpx package
+      - name: Save luci-app-themeswitch package
         run: |
           cd sdk
           mkdir -p artifacts
@@ -57,9 +57,9 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v1.0.2
-          name: luci-theme-carbonpx release - ${{env.timestamp}}
-          body: latest release of luci-theme-carbonpx theme for OpenWrt.
-          files: sdk/artifacts/luci-theme-carbonpx_*.ipk
+          name: luci-app-themeswitch release - ${{env.timestamp}}
+          body: latest release of luci-app-themeswitch for OpenWrt.
+          files: sdk/artifacts/luci-app-themeswitch_*.ipk
         env:
           GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
           timestamp: ${{ github.run_id }}
