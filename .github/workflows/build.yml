@@ -36,7 +36,14 @@ jobs:
 
           for arch in "${architectures[@]}"; do
             echo "Building for $arch..."
-            docker run --rm -v "$(pwd)":/build ghcr.io/openwrt/sdk:$arch-22.03.5 bash -c "
+
+            # دانلود OpenWrt SDK برای معماری مورد نظر
+            wget https://downloads.openwrt.org/releases/22.03.5/targets/${arch}/generic/openwrt-sdk-22.03.5-${arch}_generic.Linux-x86_64.tar.xz -O sdk.tar.xz
+            mkdir -p sdk
+            tar -xf sdk.tar.xz -C sdk --strip-components=1
+
+            # اجرای کامپایل داخل داکر
+            docker run --rm -v "$(pwd)/sdk":/build ghcr.io/openwrt/sdk:$arch-22.03.5 bash -c "
               cd /build &&
               ./scripts/feeds update -a &&
               ./scripts/feeds install luci-base &&
@@ -47,7 +54,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: all-builds
-          path: bin/packages/*/base/*.ipk
+          path: sdk/bin/packages/*/base/*.ipk
 
       - name: Create release
         uses: actions/create-release@v1
@@ -58,4 +65,4 @@ jobs:
           release_name: 'Release $(date +%Y-%m-%d)'
           draft: false
           prerelease: false
-          files: bin/packages/*/base/*.ipk
+          files: sdk/bin/packages/*/base/*.ipk
