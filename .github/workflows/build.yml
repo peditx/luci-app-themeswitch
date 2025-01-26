@@ -17,8 +17,8 @@ jobs:
 
       - name: Setup OpenWrt SDK
         run: |
-          wget https://downloads.openwrt.org/releases/23.05.5/targets/x86/64/openwrt-sdk-23.05.5-x86-64_gcc-12.3.0_musl.Linux-x86_64.tar.xz
-          mkdir sdk && tar -xJf openwrt-sdk-23.05.5-x86-64_gcc-12.3.0_musl.Linux-x86_64.tar.xz -C sdk --strip-components=1
+          wget https://downloads.openwrt.org/releases/23.05.6/targets/x86/64/openwrt-sdk-23.05.6-x86-64_gcc-12.3.0_musl.Linux-x86_64.tar.xz
+          mkdir sdk && tar -xJf openwrt-sdk-23.05.6-x86-64_gcc-12.3.0_musl.Linux-x86_64.tar.xz -C sdk --strip-components=1
           cd sdk
           echo "src-git packages https://github.com/openwrt/packages.git" > feeds.conf.default
           echo "src-git luci https://github.com/openwrt/luci.git" >> feeds.conf.default
@@ -57,7 +57,7 @@ jobs:
 
           for arch in "${architectures[@]}"; do
             echo "Building for $arch..."
-            wget https://downloads.openwrt.org/releases/23.05.5/targets/${arch}/generic/openwrt-sdk-23.05.5-${arch}_generic.Linux-x86_64.tar.xz -O sdk-${arch}.tar.xz
+            wget https://downloads.openwrt.org/releases/23.05.6/targets/${arch}/generic/openwrt-sdk-23.05.6-${arch}_generic.Linux-x86_64.tar.xz -O sdk-${arch}.tar.xz
             mkdir -p sdk-${arch} && tar -xJf sdk-${arch}.tar.xz -C sdk-${arch} --strip-components=1
             cd sdk-${arch}
             ./scripts/feeds update -a
