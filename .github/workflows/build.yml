@@ -29,6 +29,11 @@ jobs:
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
+      - name: Create defconfig
+        run: |
+          cd sdk
+          make defconfig
+
       - name: Remove lucihttp dependency
         run: |
           cd sdk
@@ -44,7 +49,6 @@ jobs:
       - name: Build luci-app-themeswitch
         run: |
           cd sdk
-          make defconfig
           make package/luci-app-themeswitch/compile -j1 V=sc
 
       - name: Save luci-app-themeswitch package
