@@ -34,10 +34,11 @@ jobs:
           cd sdk
           make defconfig
 
-      - name: Remove lucihttp dependency
+      - name: Run menuconfig to remove lucihttp
         run: |
           cd sdk
-          sed -i '/CONFIG_PACKAGE_lucihttp/d' .config
+          make menuconfig
+        continue-on-error: true
 
       - name: Add luci-app-themeswitch package
         run: |
