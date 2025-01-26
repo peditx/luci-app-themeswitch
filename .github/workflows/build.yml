@@ -1,4 +1,4 @@
-name: Build luci-app-themeswitch for OpenWrt
+name: Build luci-app-themeswitch for OpenWrt (Matrix)
 
 on:
   push:
@@ -12,15 +12,25 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+    strategy:
+      matrix:
+        # لیست معماری‌های مورد نظر
+        target: [
+          "x86_64", "arm_cortex-a9", "arm_cortex-a7", "arm_cortex-a53", "mips_24kc",
+          "mipsel_24kc", "aarch64_cortex-a53", "aarch64_cortex-a72", "arm_cortex-a15",
+          "arm_cortex-a8", "mips64_octeonplus", "mips64_octeon", "arm_mpcore",
+          "arm_cortex-a5", "arm_cortex-a15_neon-vfpv4", "arm_cortex-a7_neon-vfpv4",
+          "arm_cortex-a9_vfpv3-d16"
+        ]
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
 
     - name: Set up OpenWrt SDK
       run: |
-        wget https://downloads.openwrt.org/releases/23.05.0/targets/x86/64/openwrt-sdk-23.05.0-x86-64_gcc-12.3.0_musl.Linux-x86_64.tar.xz
-        mkdir sdk && tar -xJf openwrt-sdk-23.05.0-x86-64_gcc-12.3.0_musl.Linux-x86_64.tar.xz -C sdk --strip-components=1
+        SDK_URL="https://downloads.openwrt.org/releases/23.05.0/targets/$(echo ${{ matrix.target }} | sed 's/_/\//')/openwrt-sdk-23.05.0-$(echo ${{ matrix.target }} | tr '_' '-')_gcc-12.3.0_musl.Linux-x86_64.tar.xz"
+        wget $SDK_URL -O openwrt-sdk.tar.xz
+        mkdir sdk && tar -xJf openwrt-sdk.tar.xz -C sdk --strip-components=1
         cd sdk
         echo "src-git packages https://github.com/openwrt/packages.git" > feeds.conf.default
         echo "src-git luci https://github.com/openwrt/luci.git" >> feeds.conf.default
@@ -40,28 +50,13 @@ jobs:
         cd sdk
         make defconfig
 
-    - name: Build lucihttp for all architectures
+    - name: Build luci-app-themeswitch package
       run: |
         cd sdk
-        for target in $(ls -1 target/linux); do
-          if [ -d "target/linux/$target" ]; then
-            echo "Building lucihttp for target: $target"
-            make TOOLCHAIN=1 TARGET=$target package/feeds/luci/lucihttp/compile V=s
-          fi
-        done
-
-    - name: Build luci-app-themeswitch for all architectures
-      run: |
-        cd sdk
-        for target in $(ls -1 target/linux); do
-          if [ -d "target/linux/$target" ]; then
-            echo "Building luci-app-themeswitch for target: $target"
-            make TOOLCHAIN=1 TARGET=$target package/luci-app-themeswitch/compile V=s
-          fi
-        done
+        make package/luci-app-themeswitch/compile V=s
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: luci-app-themeswitch-ipk
+        name: luci-app-themeswitch-${{ matrix.target }}-ipk
         path: sdk/bin/packages/*/base/luci-app-themeswitch*.ipk
