@@ -9,6 +9,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -27,6 +28,11 @@ jobs:
           echo "src-git luci https://github.com/openwrt/luci.git" >> feeds.conf.default
           ./scripts/feeds update -a
           ./scripts/feeds install -a
+
+      - name: Remove lucihttp dependency
+        run: |
+          cd sdk
+          sed -i '/CONFIG_PACKAGE_lucihttp/d' .config
 
       - name: Add luci-app-themeswitch package
         run: |
@@ -53,7 +59,7 @@ jobs:
         with:
           tag_name: v1.0.2
           name: luci-app-themeswitch release - ${{env.timestamp}}
-          body: Latest release of luci-app-themeswitch theme for OpenWrt.
+          body: latest release of luci-app-themeswitch theme for OpenWrt.
           files: sdk/artifacts/luci-app-themeswitch_*.ipk
         env:
           GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
