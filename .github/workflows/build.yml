@@ -1,6 +1,9 @@
 name: Build and Release luci-app-themeswitch
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
@@ -17,8 +20,8 @@ jobs:
 
       - name: Setup OpenWrt SDK
         run: |
-          wget https://downloads.openwrt.org/releases/23.05.6/targets/x86/64/openwrt-sdk-23.05.6-x86-64_gcc-12.3.0_musl.Linux-x86_64.tar.xz
-          mkdir sdk && tar -xJf openwrt-sdk-23.05.6-x86-64_gcc-12.3.0_musl.Linux-x86_64.tar.xz -C sdk --strip-components=1
+          wget https://downloads.openwrt.org/releases/23.05.0/targets/x86_64/generic/openwrt-sdk-23.05.0-x86_64_generic.Linux-x86_64.tar.xz
+          mkdir sdk && tar -xJf openwrt-sdk-23.05.0-x86_64_generic.Linux-x86_64.tar.xz -C sdk --strip-components=1
           cd sdk
           echo "src-git packages https://github.com/openwrt/packages.git" > feeds.conf.default
           echo "src-git luci https://github.com/openwrt/luci.git" >> feeds.conf.default
@@ -32,51 +35,26 @@ jobs:
           cd ..
           echo "CONFIG_PACKAGE_luci-app-themeswitch=m" >> .config
 
-      - name: Build luci-app-themeswitch for all architectures
+      - name: Build luci-app-themeswitch
         run: |
-          architectures=(
-            x86_64
-            arm_cortex-a7
-            arm_cortex-a53
-            arm_cortex-a72
-            mips_24kc
-            mipsel_24kc
-            powerpc_8540
-            arm_cortex-a9
-            arm_xscale
-            i386_pentium4
-            mips_mips32
-            mipsel_mips32
-            powerpc_464fp
-            arm_cortex-a15_neon-vfpv4
-            arm_cortex-a8
-            aarch64_cortex-a53
-            aarch64_cortex-a72
-            aarch64_generic
-          )
+          cd sdk
+          make defconfig
+          make package/luci-app-themeswitch/compile -j1 V=sc
 
-          for arch in "${architectures[@]}"; do
-            echo "Building for $arch..."
-            wget https://downloads.openwrt.org/releases/23.05.6/targets/${arch}/generic/openwrt-sdk-23.05.6-${arch}_generic.Linux-x86_64.tar.xz -O sdk-${arch}.tar.xz
-            mkdir -p sdk-${arch} && tar -xJf sdk-${arch}.tar.xz -C sdk-${arch} --strip-components=1
-            cd sdk-${arch}
-            ./scripts/feeds update -a
-            ./scripts/feeds install luci-base
-            make defconfig
-            make package/luci-app-themeswitch/compile -j1 V=sc
-            mkdir -p artifacts/${arch}
-            find bin/ -name "*.ipk" -exec cp {} artifacts/${arch}/ \;
-            cd ..
-          done
+      - name: Save luci-app-themeswitch package
+        run: |
+          cd sdk
+          mkdir -p artifacts
+          find bin/ -name "*.ipk" -exec cp {} artifacts/ \;
 
       - name: Create Release
         id: create_release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: v${{ github.run_id }}-$(date +%Y%m%d)
+          tag_name: v1.0.2
           name: luci-app-themeswitch release - ${{env.timestamp}}
           body: Latest release of luci-app-themeswitch theme for OpenWrt.
-          files: sdk-${{ github.run_id }}/artifacts/*/*.ipk
+          files: sdk/artifacts/luci-app-themeswitch_*.ipk
         env:
           GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
           timestamp: ${{ github.run_id }}
