@@ -36,7 +36,7 @@ jobs:
 
           for arch in "${architectures[@]}"; do
             echo "Building for $arch..."
-            docker run --rm -v "$(pwd)":/build openwrtorg/sdk:$arch-21.02.3 bash -c "
+            docker run --rm -v "$(pwd)":/build ghcr.io/openwrt/sdk:$arch-22.03.5 bash -c "
               cd /build &&
               ./scripts/feeds update -a &&
               ./scripts/feeds install luci-base &&
