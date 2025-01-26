@@ -127,9 +127,21 @@ jobs:
       - name: Retrieve Version
         id: ver
         run: |
+          # Create cur_ver.json if it doesn't exist
+          if [ ! -f cur_ver.json ]; then
+            echo '{}' > cur_ver.json
+          fi
+
+          # Copy cur_ver.json to new_ver.json
           cp cur_ver.json new_ver.json
-          vers=$(nvcmp -c nvchecker.toml -aj)
-          jq -cr 'map("\(.name)=\(.newver)") | .[]' <<< $vers >> $GITHUB_OUTPUT
+
+          # Run nvchecker and process the output
+          if [ -f nvchecker.toml ]; then
+            vers=$(nvcmp -c nvchecker.toml -aj)
+            jq -cr 'map("\(.name)=\(.newver)") | .[]' <<< $vers >> $GITHUB_OUTPUT
+          else
+            echo "nvchecker.toml not found, skipping version check."
+          fi
 
       # Use go from master for 21.02/22.03/23.05
       - name: Override golang version
