@@ -20,8 +20,8 @@ jobs:
 
       - name: Setup OpenWrt SDK
         run: |
-          wget https://downloads.openwrt.org/releases/23.05.0/targets/x86_64/generic/openwrt-sdk-23.05.0-x86_64_generic.Linux-x86_64.tar.xz
-          mkdir sdk && tar -xJf openwrt-sdk-23.05.0-x86_64_generic.Linux-x86_64.tar.xz -C sdk --strip-components=1
+          wget https://downloads.openwrt.org/releases/23.05.0/targets/x86/64/openwrt-sdk-23.05.0-x86-64_gcc-12.3.0_musl.Linux-x86_64.tar.xz
+          mkdir sdk && tar -xJf openwrt-sdk-23.05.0-x86-64_gcc-12.3.0_musl.Linux-x86_64.tar.xz -C sdk --strip-components=1
           cd sdk
           echo "src-git packages https://github.com/openwrt/packages.git" > feeds.conf.default
           echo "src-git luci https://github.com/openwrt/luci.git" >> feeds.conf.default
