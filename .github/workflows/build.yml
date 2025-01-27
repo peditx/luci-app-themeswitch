@@ -16,13 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        arch: [
-          "x86_64", "aarch64_generic", "aarch64_cortex-a53", "aarch64_cortex-a72",
-          "arm_cortex-a5_vfpv4", "arm_cortex-a7", "arm_cortex-a7_neon-vfpv4",
-          "arm_cortex-a8_vfpv3", "arm_cortex-a9", "arm_cortex-a9_neon",
-          "arm_cortex-a9_vfpv3-d16", "arm_cortex-a15_neon-vfpv4", "mips_24kc",
-          "mips_4kec", "mips_mips32", "mipsel_24kc", "mipsel_74kc", "mipsel_mips32"
-        ]
+        arch: 
         include:
           - platform: x86_64
             url_sdk: https://downloads.openwrt.org/releases/23.05.5/targets/x86/64/openwrt-sdk-23.05.5-x86-64_gcc-12.3.0_musl.Linux-x86_64.tar.xz
