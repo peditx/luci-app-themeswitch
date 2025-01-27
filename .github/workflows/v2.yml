@@ -37,42 +37,33 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up OpenWrt build environment
+      - name: Set up Docker
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential libncurses5-dev libncursesw5-dev zlib1g-dev gawk git gettext libssl-dev xsltproc wget unzip python3 python3-venv
+          sudo apt-get install -y docker.io
+          sudo systemctl start docker
+          sudo systemctl enable docker
 
-      - name: Clone OpenWrt source
+      - name: Pull OpenWrt SDK Docker image
         run: |
-          git clone https://git.openwrt.org/openwrt/openwrt.git
-          cd openwrt
-          git checkout v23.05.0
-
-      - name: Add luci-app-themeswitch to OpenWrt
-        run: |
-          cd openwrt
-          cd package
-          git clone https://github.com/peditx/luci-app-themeswitch
-          cd ..
-          echo "CONFIG_PACKAGE_luci-app-themeswitch=m" >> .config
-
-      - name: Update feeds
-        run: |
-          cd openwrt
-          ./scripts/feeds update -a
-          ./scripts/feeds install -a
+          docker pull openwrtorg/sdk:23.05.0
 
       - name: Build for ${{ matrix.arch }}
         run: |
-          cd openwrt
-          make defconfig
-          make package/luci-app-themeswitch/compile -j1 V=sc
+          docker run --rm -v $(pwd):/workspace -w /workspace openwrtorg/sdk:23.05.0 /bin/bash -c "
+            git clone https://github.com/peditx/luci-app-themeswitch package/luci-app-themeswitch &&
+            echo 'CONFIG_PACKAGE_luci-app-themeswitch=m' >> .config &&
+            ./scripts/feeds update -a &&
+            ./scripts/feeds install -a &&
+            make defconfig &&
+            make package/luci-app-themeswitch/compile -j$(nproc) V=sc
+          "
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: luci-app-themeswitch_${{ matrix.arch }}
-          path: openwrt/bin/packages/${{ matrix.arch }}/base/luci-app-themeswitch_1_${{ matrix.arch }}.ipk
+          path: bin/packages/${{ matrix.arch }}/base/luci-app-themeswitch_1_${{ matrix.arch }}.ipk
 
   release:
     runs-on: ubuntu-latest
