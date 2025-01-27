@@ -1,5 +1,6 @@
 name: "Build IPK"
 on:
+  repository_dispatch:
   workflow_dispatch: {}
   push:
     branches:
@@ -10,17 +11,53 @@ env:
   TZ: Asia/Tehran
 
 jobs:
+  job_check:
+    name: Check Version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.check_version.outputs.latest_version }}
+      has_update: ${{ steps.check_version.outputs.has_update }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Check version
+        id: check_version
+        env:
+          url_release: https://api.github.com/repos/${{ github.repository }}/releases/latest
+        run: |
+          latest_version=$(grep -oP 'PKG_VERSION:=\K.*' Makefile | sed 's/^/v/')
+          latest_release=$(wget -qO- -t1 -T2 ${{env.url_release}} | awk -F '"' '/tag_name/{print $4}')
+          has_update=$([ "${latest_version}" != "${latest_release}" ] && echo true || echo false)
+          echo "latest_version=${latest_version}" >> $GITHUB_OUTPUT
+          echo "has_update=${has_update}" >> $GITHUB_OUTPUT
+
+      - name: Generate new tag & release
+        if: steps.check_version.outputs.has_update == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+        run: |
+          tag_name="v$(date +'%Y.%m.%d')"
+          if [[ ! $tag_name =~ ^v[0-9]{4}\.[0-9]{2}\.[0-9]{2}$ ]]; then
+              echo "Invalid tag format: $tag_name"
+              exit 1
+          fi
+          echo "Creating release for tag: $tag_name"
+          gh release create "$tag_name" --title "Release $tag_name" --notes "Automated release"
+
   job_build:
     name: Build OpenWRT
+    needs: job_check
+    if: needs.job_check.outputs.has_update == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Install packages
         run: |
-          echo "Install packages"
           sudo -E apt-get -qq update
           sudo -E apt-get -qq install build-essential clang flex bison g++ gawk gcc-multilib g++-multilib gettext git libncurses5-dev libssl-dev python3 python3-venv rsync unzip zlib1g-dev file wget
           sudo -E apt-get -qq autoremove --purge
           sudo -E apt-get -qq clean
+
       - name: Cache openwrt SDK
         id: cache-sdk
         uses: actions/cache@v3
@@ -34,7 +71,7 @@ jobs:
           url_sdk: https://archive.openwrt.org/releases/23.05.2/targets/x86/64/openwrt-sdk-23.05.2-x86-64_gcc-12.3.0_musl.Linux-x86_64.tar.xz
         run: |
           wget ${{ env.url_sdk }}
-          file_name=$(echo ${{env.url_sdk}} | awk -F/ '{print $NF}')
+          file_name=$(basename ${{ env.url_sdk }})
           mkdir sdk && tar -xJf $file_name -C ./sdk --strip-components=1
           cd sdk  
           echo "src-git base https://github.com/openwrt/openwrt.git;openwrt-23.05" > feeds.conf
@@ -44,39 +81,30 @@ jobs:
           git clone -b main https://github.com/${{ github.repository }}.git package/downloads/luci-app-themeswitch
           ./scripts/feeds update -a
           echo "CONFIG_PACKAGE_luci-app-themeswitch=m" > .config
-          echo "CONFIG_LUCI_JSMIN=n" >> .config
-          echo "CONFIG_LUCI_CSSTIDY=n" >> .config
           ./scripts/feeds install -d n luci-app-themeswitch
           make download -j8
+
       - name: Configure IPK
         run: |
           cd sdk
           ./scripts/feeds install luci-app-themeswitch
-          echo "CONFIG_ALL_NONSHARED=n" > .config
-          echo "CONFIG_ALL_KMODS=n" >> .config
-          echo "CONFIG_ALL=n" >> .config
-          echo "CONFIG_AUTOREMOVE=n" >> .config
-          echo "CONFIG_LUCI_LANG_zh_Hans=n" >> .config
-          echo "CONFIG_LUCI_JSMIN=n" >> .config
-          echo "CONFIG_LUCI_CSSTIDY=n" >> .config
-          echo "CONFIG_PACKAGE_luci-app-themeswitch=m" >> .config
+          echo "CONFIG_PACKAGE_luci-app-themeswitch=m" > .config
           make defconfig
+
       - name: Compile IPK
         id: compile
         run: |
           cd sdk
-          echo "make package/luci-app-themeswitch/{clean,compile} -j$(nproc)"
           make package/luci-app-themeswitch/{clean,compile} -j$(nproc)
           mv bin/packages/x86_64/base/ ../
-          rm .config .config.old
-          cd ..
           echo "status=success" >> $GITHUB_OUTPUT
           echo "FIRMWARE=$PWD" >> $GITHUB_ENV
+
       - name: Upload IPK to release
         uses: softprops/action-gh-release@v1
         if: steps.compile.outputs.status == 'success'
         env:
           GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
         with:
-          tag_name: "v$(date +'%Y.%m.%d')"
+          tag_name: ${{ needs.job_check.outputs.version }}
           files: ${{ env.FIRMWARE }}/base/luci-app-*.ipk
