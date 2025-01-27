@@ -89,5 +89,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
         with:
-          tag_name: "v$(date +'%Y.%m.%d')"  # Tag it with the current date
+          tag_name: ${{ github.run_id }}  # Use the run ID instead of date
           files: ${{ env.FIRMWARE }}/base/luci-app-*.ipk
