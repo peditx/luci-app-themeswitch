@@ -12,7 +12,7 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
         architecture:
@@ -34,68 +34,35 @@ jobs:
           - mipsel_24kc
           - mipsel_74kc
           - mipsel_mips32
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-      - name: Cache SDK
-        id: cache-sdk
-        uses: actions/cache@v3
-        with:
-          path: /tmp/openwrt-sdk
-          key: sdk-${{ matrix.architecture }}
-          restore-keys: |
-            sdk-
-
-      - name: Initialization environment
-        if: steps.cache-sdk.outputs.cache-hit != 'true'
-        env:
-          x86_64_sdk: https://downloads.openwrt.org/releases/23.05.5/targets/x86/64/openwrt-sdk-23.05.5-x86-64_gcc-12.3.0_musl.Linux-x86_64.tar.xz
-          aarch64_generic_sdk: https://downloads.openwrt.org/releases/23.05.5/targets/rockchip/armv8/openwrt-sdk-23.05.5-rockchip-armv8_gcc-12.3.0_musl.Linux-x86_64.tar.xz
-          aarch64_cortex_a53_sdk: https://downloads.openwrt.org/releases/23.05.5/targets/mvebu/cortexa53/openwrt-sdk-23.05.5-mvebu-cortexa53_gcc-12.3.0_musl.Linux-x86_64.tar.xz
-          aarch64_cortex_a72_sdk: https://downloads.openwrt.org/releases/23.05.5/targets/mvebu/cortexa72/openwrt-sdk-23.05.5-mvebu-cortexa72_gcc-12.3.0_musl.Linux-x86_64.tar.xz
-          arm_cortex_a5_vfpv4_sdk: https://downloads.openwrt.org/releases/23.05.5/targets/at91/sama5/openwrt-sdk-23.05.5-at91-sama5_gcc-12.3.0_musl_eabi.Linux-x86_64.tar.xz
-          arm_cortex_a7_sdk: https://downloads.openwrt.org/releases/23.05.5/targets/mediatek/mt7629/openwrt-sdk-23.05.5-mediatek-mt7629_gcc-12.3.0_musl_eabi.Linux-x86_64.tar.xz
-          arm_cortex_a7_neon_vfpv4_sdk: https://downloads.openwrt.org/releases/23.05.5/targets/sunxi/cortexa7/openwrt-sdk-23.05.5-sunxi-cortexa7_gcc-12.3.0_musl_eabi.Linux-x86_64.tar.xz
-          arm_cortex_a8_vfpv3_sdk: https://downloads.openwrt.org/releases/23.05.5/targets/sunxi/cortexa8/openwrt-sdk-23.05.5-sunxi-cortexa8_gcc-12.3.0_musl_eabi.Linux-x86_64.tar.xz
-          arm_cortex_a9_sdk: https://downloads.openwrt.org/releases/23.05.5/targets/bcm53xx/generic/openwrt-sdk-23.05.5-bcm53xx-generic_gcc-12.3.0_musl_eabi.Linux-x86_64.tar.xz
-          arm_cortex_a9_neon_sdk: https://downloads.openwrt.org/releases/23.05.5/targets/zynq/generic/openwrt-sdk-23.05.5-zynq-generic_gcc-12.3.0_musl_eabi.Linux-x86_64.tar.xz
-          arm_cortex_a9_vfpv3_d16_sdk: https://downloads.openwrt.org/releases/23.05.5/targets/mvebu/cortexa9/openwrt-sdk-23.05.5-mvebu-cortexa9_gcc-12.3.0_musl_eabi.Linux-x86_64.tar.xz
-          arm_cortex_a15_neon_vfpv4_sdk: https://downloads.openwrt.org/releases/23.05.5/targets/ipq806x/generic/openwrt-sdk-23.05.5-ipq806x-generic_gcc-12.3.0_musl_eabi.Linux-x86_64.tar.xz
-          mips_24kc_sdk: https://downloads.openwrt.org/releases/23.05.5/targets/ath79/generic/openwrt-sdk-23.05.5-ath79-generic_gcc-12.3.0_musl.Linux-x86_64.tar.xz
-          mips_4kec_sdk: https://downloads.openwrt.org/releases/23.05.5/targets/realtek/rtl838x/openwrt-sdk-23.05.5-realtek-rtl838x_gcc-12.3.0_musl.Linux-x86_64.tar.xz
-          mips_mips32_sdk: https://downloads.openwrt.org/releases/23.05.5/targets/bcm63xx/generic/openwrt-sdk-23.05.5-bcm63xx-generic_gcc-12.3.0_musl.Linux-x86_64.tar.xz
-          mipsel_24kc_sdk: https://downloads.openwrt.org/releases/23.05.5/targets/ramips/rt288x/openwrt-sdk-23.05.5-ramips-rt288x_gcc-12.3.0_musl.Linux-x86_64.tar.xz
-          mipsel_74kc_sdk: https://downloads.openwrt.org/releases/23.05.5/targets/ramips/rt3883/openwrt-sdk-23.05.5-ramips-rt3883_gcc-12.3.0_musl.Linux-x86_64.tar.xz
-          mipsel_mips32_sdk: https://downloads.openwrt.org/releases/23.05.5/targets/bcm47xx/generic/openwrt-sdk-23.05.5-bcm47xx-generic_gcc-12.3.0_musl.Linux-x86_64.tar.xz
-
-      - name: Download SDK
+      - name: Install packages
         run: |
-          echo "Downloading SDK for architecture: ${{ matrix.architecture }}"
-          case ${{ matrix.architecture }} in
-            x86_64) SDK_URL=${{ env.x86_64_sdk }} ;;
-            aarch64_generic) SDK_URL=${{ env.aarch64_generic_sdk }} ;;
-            aarch64_cortex-a53) SDK_URL=${{ env.aarch64_cortex_a53_sdk }} ;;
-            aarch64_cortex-a72) SDK_URL=${{ env.aarch64_cortex_a72_sdk }} ;;
-            arm_cortex-a5_vfpv4) SDK_URL=${{ env.arm_cortex_a5_vfpv4_sdk }} ;;
-            arm_cortex-a7) SDK_URL=${{ env.arm_cortex_a7_sdk }} ;;
-            arm_cortex-a7_neon-vfpv4) SDK_URL=${{ env.arm_cortex_a7_neon_vfpv4_sdk }} ;;
-            arm_cortex-a8_vfpv3) SDK_URL=${{ env.arm_cortex_a8_vfpv3_sdk }} ;;
-            arm_cortex-a9) SDK_URL=${{ env.arm_cortex_a9_sdk }} ;;
-            arm_cortex-a9_neon) SDK_URL=${{ env.arm_cortex_a9_neon_sdk }} ;;
-            arm_cortex-a9_vfpv3-d16) SDK_URL=${{ env.arm_cortex_a9_vfpv3_d16_sdk }} ;;
-            arm_cortex-a15_neon-vfpv4) SDK_URL=${{ env.arm_cortex_a15_neon_vfpv4_sdk }} ;;
-            mips_24kc) SDK_URL=${{ env.mips_24kc_sdk }} ;;
-            mips_4kec) SDK_URL=${{ env.mips_4kec_sdk }} ;;
-            mips_mips32) SDK_URL=${{ env.mips_mips32_sdk }} ;;
-            mipsel_24kc) SDK_URL=${{ env.mipsel_24kc_sdk }} ;;
-            mipsel_74kc) SDK_URL=${{ env.mipsel_74kc_sdk }} ;;
-            mipsel_mips32) SDK_URL=${{ env.mipsel_mips32_sdk }} ;;
-            *) echo "Unsupported architecture: ${{ matrix.architecture }}"; exit 1 ;;
-          esac
-          curl -L $SDK_URL | tar -C /tmp -xJ
-          export SDK_PATH=/tmp/openwrt-sdk
+          sudo -E rm -rf /usr/share/dotnet /etc/mysql /etc/php /etc/apt/sources.list.d /usr/local/lib/android
+          echo "Install packages"
+          sudo -E apt-get -qq update
+          sudo -E apt-get -qq install build-essential clang flex bison g++ gawk gcc-multilib g++-multilib gettext git libncurses-dev libssl-dev python3-distutils python3-setuptools rsync swig unzip zlib1g-dev file wget
+          sudo -E apt-get -qq autoremove --purge
+          sudo -E apt-get -qq clean
+
+      - name: Read SDK URL from file
+        run: |
+          ARCHITECTURE=${{ matrix.architecture }}
+          URL=$(python3 -c "import yaml; print(yaml.safe_load(open('sdk_urls.yml'))['$ARCHITECTURE'])")
+          echo "SDK URL: $URL"
+          wget $URL
+          file_name=$(echo $URL | awk -F/ '{print $NF}')
+          mkdir sdk && tar -xf $file_name -C sdk
+
+      - name: Initialize environment
+        if: steps.cache-sdk.outputs.cache-hit != 'true'
+        run: |
+          cd sdk
+          ./scripts/feeds update -a
+          ./scripts/feeds install luci-app-themeswitch
+          make defconfig
 
       - name: Configure IPK
         run: |
