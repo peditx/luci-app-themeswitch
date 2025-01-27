@@ -1,0 +1,105 @@
+name: Build and Release luci-app-themeswitch
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  MY_GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch:
+          - ar71xx
+          - ath79
+          - brcm47xx
+          - brcm63xx
+          - ipq40xx
+          - kirkwood
+          - lantiq
+          - layerscape
+          - malta
+          - mpc85xx
+          - mvebu
+          - octeon
+          - oxnas
+          - ramips
+          - realtek
+          - sunxi
+          - x86
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up OpenWrt build environment
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libncurses5-dev libncursesw5-dev zlib1g-dev gawk git gettext libssl-dev xsltproc wget unzip python
+
+      - name: Clone OpenWrt source
+        run: |
+          git clone https://git.openwrt.org/openwrt/openwrt.git
+          cd openwrt
+          git checkout v21.02.3
+
+      - name: Add luci-app-themeswitch to OpenWrt
+        run: |
+          cd openwrt
+          cd package
+          git clone https://github.com/peditx/luci-app-themeswitch
+          cd ..
+          echo "CONFIG_PACKAGE_luci-app-themeswitch=m" >> .config
+
+      - name: Update feeds
+        run: |
+          cd openwrt
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+
+      - name: Build for ${{ matrix.arch }}
+        run: |
+          cd openwrt
+          make defconfig
+          make package/luci-app-themeswitch/compile -j1 V=sc
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: luci-app-themeswitch_${{ matrix.arch }}
+          path: openwrt/bin/packages/${{ matrix.arch }}/base/luci-app-themeswitch_1_${{ matrix.arch }}.ipk
+
+  release:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: artifacts
+
+      - name: Create release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ env.MY_GITHUB_TOKEN }}
+        with:
+          tag_name: $(date +'%Y-%m-%d')
+          release_name: Release $(date +'%Y-%m-%d')
+          body: "نسخه آخر نرم‌افزار با پشتیبانی از ۱۷ معماری OpenWrt"
+          draft: false
+          prerelease: false
+
+      - name: Upload release assets
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ env.MY_GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: artifacts/luci-app-themeswitch_${{ matrix.arch }}/luci-app-themeswitch_1_${{ matrix.arch }}.ipk
+          asset_name: luci-app-themeswitch_1_${{ matrix.arch }}.ipk
+          asset_content_type: application/octet-stream
