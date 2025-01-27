@@ -1,6 +1,5 @@
 name: "Build IPK"
 on:
-  repository_dispatch:
   workflow_dispatch: {}
   push:
     branches:
@@ -11,47 +10,8 @@ env:
   TZ: Asia/Tehran
 
 jobs:
-  job_check:
-    if: github.repository == ${{ github.repository }}
-    name: Check Version
-    runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.check_version.outputs.latest_version }}
-      has_update: ${{ steps.check_version.outputs.has_update }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@main
-        with:
-          fetch-depth: 0
-          ref: 'main'
-
-      - name: Check version
-        id: check_version
-        env:
-          url_release: https://api.github.com/repos/${{ github.repository }}/releases/latest
-        run: |
-          latest_version=$(grep -oP 'PKG_VERSION:=\K.*' Makefile | sed 's/^/v/')
-          latest_release=$(wget -qO- -t1 -T2 ${{env.url_release}} | awk -F '"' '/tag_name/{print $4}')
-          has_update=$([ "${latest_version}" != "${latest_release}" ] && echo true || echo false)
-          echo "latest_version=${latest_version}" >> $GITHUB_OUTPUT
-          echo "has_update=${has_update}" >> $GITHUB_OUTPUT
-          echo "latest_version: ${latest_version}"
-          echo "latest_release: ${latest_release}"
-          echo "has_update: ${has_update}"
-      - name: Generate new tag & release
-        if: steps.check_version.outputs.has_update == 'true'
-        uses: softprops/action-gh-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
-        with:
-          name: luci-app-themeswitch
-          tag_name: ${{steps.check_version.outputs.latest_version}}
-
-
   job_build:
     name: Build OpenWRT
-    needs: job_check
-    if: needs.job_check.outputs.has_update == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Install packages
@@ -118,5 +78,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
         with:
-          tag_name: ${{needs.job_check.outputs.version}}
+          tag_name: "v$(date +'%Y.%m.%d')"
           files: ${{ env.FIRMWARE }}/base/luci-app-*.ipk
