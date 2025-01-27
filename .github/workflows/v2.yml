@@ -15,23 +15,24 @@ jobs:
     strategy:
       matrix:
         arch:
-          - ar71xx
-          - ath79
-          - brcm47xx
-          - brcm63xx
-          - ipq40xx
-          - kirkwood
-          - lantiq
-          - layerscape
-          - malta
-          - mpc85xx
-          - mvebu
-          - octeon
-          - oxnas
-          - ramips
-          - realtek
-          - sunxi
-          - x86
+          - aarch64_cortex-a53
+          - aarch64_cortex-a72
+          - aarch64_generic
+          - arm_cortex-a15_neon-vfpv4
+          - arm_cortex-a5_vfpv4
+          - arm_cortex-a7
+          - arm_cortex-a7_neon-vfpv4
+          - arm_cortex-a8_vfpv3
+          - arm_cortex-a9
+          - arm_cortex-a9_neon
+          - arm_cortex-a9_vfpv3-d16
+          - mipsel_24kc
+          - mipsel_74kc
+          - mipsel_mips32
+          - mips_24kc
+          - mips_4kec
+          - mips_mips32
+          - x86_64
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -39,13 +40,13 @@ jobs:
       - name: Set up OpenWrt build environment
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential libncurses5-dev libncursesw5-dev zlib1g-dev gawk git gettext libssl-dev xsltproc wget unzip python
+          sudo apt-get install -y build-essential libncurses5-dev libncursesw5-dev zlib1g-dev gawk git gettext libssl-dev xsltproc wget unzip python3 python3-distutils
 
       - name: Clone OpenWrt source
         run: |
           git clone https://git.openwrt.org/openwrt/openwrt.git
           cd openwrt
-          git checkout v21.02.3
+          git checkout v23.05.0
 
       - name: Add luci-app-themeswitch to OpenWrt
         run: |
@@ -90,7 +91,7 @@ jobs:
         with:
           tag_name: $(date +'%Y-%m-%d')
           release_name: Release $(date +'%Y-%m-%d')
-          body: "نسخه آخر نرم‌افزار با پشتیبانی از ۱۷ معماری OpenWrt"
+          body: "نسخه آخر نرم‌افزار با پشتیبانی از ۱۷ معماری OpenWrt (v23.05)"
           draft: false
           prerelease: false
 
