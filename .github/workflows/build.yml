@@ -36,7 +36,7 @@ jobs:
           mipsel_24kc: "https://downloads.openwrt.org/releases/21.02.0/targets/mipsel/24kc/openwrt-21.02.0-mipsel-24kc-squashfs.img.gz"
           mipsel_74kc: "https://downloads.openwrt.org/releases/21.02.0/targets/mipsel/74kc/openwrt-21.02.0-mipsel-74kc-squashfs.img.gz"
           mipsel_mips32: "https://downloads.openwrt.org/releases/21.02.0/targets/mipsel/mips32/openwrt-21.02.0-mipsel-mips32-squashfs.img.gz"
-          
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -45,7 +45,9 @@ jobs:
         run: |
           mkdir -p sdk
           cd sdk
-          curl -fsSL -o sdk.tar.xz ${{ matrix.sdk_urls[${{ matrix.architecture }}] }}
+          # Use the correct URL based on architecture
+          SDK_URL="${{ matrix.sdk_urls[matrix.architecture] }}"
+          curl -fsSL -o sdk.tar.xz $SDK_URL
           tar -xf sdk.tar.xz
           rm sdk.tar.xz
           cd ..
