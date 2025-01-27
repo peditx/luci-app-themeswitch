@@ -1,4 +1,4 @@
-name: "Build IPK"
+name: "Build IPK for Multiple Architectures"
 on:
   repository_dispatch:
   workflow_dispatch: {}
@@ -7,55 +7,101 @@ on:
       - 'main'
     paths:
       - 'luci-app-themeswitch/Makefile'
-
 env:
   TZ: Asia/Tehran
 
 jobs:
-  build:
+  job_build:
+    name: Build OpenWRT
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        architecture: [x86_64, aarch64_generic, aarch64_cortex-a53, aarch64_cortex-a72, arm_cortex-a5_vfpv4, arm_cortex-a7, arm_cortex-a7_neon-vfpv4, arm_cortex-a8_vfpv3, arm_cortex-a9, arm_cortex-a9_neon, arm_cortex-a9_vfpv3-d16, arm_cortex-a15_neon-vfpv4, mips_24kc, mips_4kec, mips_mips32, mipsel_24kc, mipsel_74kc, mipsel_mips32]
-        sdk_urls:
-          x86_64: "https://downloads.openwrt.org/releases/21.02.0/targets/x86/64/openwrt-21.02.0-x86-64-generic-squashfs.img.gz"
-          aarch64_generic: "https://downloads.openwrt.org/releases/21.02.0/targets/aarch64/generic/openwrt-21.02.0-aarch64-generic-squashfs.img.gz"
-          aarch64_cortex-a53: "https://downloads.openwrt.org/releases/21.02.0/targets/aarch64/cortex-a53/openwrt-21.02.0-aarch64-cortex-a53-squashfs.img.gz"
-          aarch64_cortex-a72: "https://downloads.openwrt.org/releases/21.02.0/targets/aarch64/cortex-a72/openwrt-21.02.0-aarch64-cortex-a72-squashfs.img.gz"
-          arm_cortex-a5_vfpv4: "https://downloads.openwrt.org/releases/21.02.0/targets/arm_cortex-a5_vfpv4/openwrt-21.02.0-arm_cortex-a5_vfpv4-squashfs.img.gz"
-          arm_cortex-a7: "https://downloads.openwrt.org/releases/21.02.0/targets/arm_cortex-a7/openwrt-21.02.0-arm_cortex-a7-squashfs.img.gz"
-          arm_cortex-a7_neon-vfpv4: "https://downloads.openwrt.org/releases/21.02.0/targets/arm_cortex-a7_neon-vfpv4/openwrt-21.02.0-arm_cortex-a7_neon-vfpv4-squashfs.img.gz"
-          arm_cortex-a8_vfpv3: "https://downloads.openwrt.org/releases/21.02.0/targets/arm_cortex-a8_vfpv3/openwrt-21.02.0-arm_cortex-a8_vfpv3-squashfs.img.gz"
-          arm_cortex-a9: "https://downloads.openwrt.org/releases/21.02.0/targets/arm_cortex-a9/openwrt-21.02.0-arm_cortex-a9-squashfs.img.gz"
-          arm_cortex-a9_neon: "https://downloads.openwrt.org/releases/21.02.0/targets/arm_cortex-a9_neon/openwrt-21.02.0-arm_cortex-a9_neon-squashfs.img.gz"
-          arm_cortex-a9_vfpv3-d16: "https://downloads.openwrt.org/releases/21.02.0/targets/arm_cortex-a9_vfpv3-d16/openwrt-21.02.0-arm_cortex-a9_vfpv3-d16-squashfs.img.gz"
-          arm_cortex-a15_neon-vfpv4: "https://downloads.openwrt.org/releases/21.02.0/targets/arm_cortex-a15_neon-vfpv4/openwrt-21.02.0-arm_cortex-a15_neon-vfpv4-squashfs.img.gz"
-          mips_24kc: "https://downloads.openwrt.org/releases/21.02.0/targets/mips/24kc/openwrt-21.02.0-mips-24kc-squashfs.img.gz"
-          mips_4kec: "https://downloads.openwrt.org/releases/21.02.0/targets/mips/4kec/openwrt-21.02.0-mips-4kec-squashfs.img.gz"
-          mips_mips32: "https://downloads.openwrt.org/releases/21.02.0/targets/mips/mips32/openwrt-21.02.0-mips-mips32-squashfs.img.gz"
-          mipsel_24kc: "https://downloads.openwrt.org/releases/21.02.0/targets/mipsel/24kc/openwrt-21.02.0-mipsel-24kc-squashfs.img.gz"
-          mipsel_74kc: "https://downloads.openwrt.org/releases/21.02.0/targets/mipsel/74kc/openwrt-21.02.0-mipsel-74kc-squashfs.img.gz"
-          mipsel_mips32: "https://downloads.openwrt.org/releases/21.02.0/targets/mipsel/mips32/openwrt-21.02.0-mipsel-mips32-squashfs.img.gz"
-
+        arch: [
+          "x86_64", "aarch64_generic", "aarch64_cortex-a53", "aarch64_cortex-a72",
+          "arm_cortex-a5_vfpv4", "arm_cortex-a7", "arm_cortex-a7_neon-vfpv4",
+          "arm_cortex-a8_vfpv3", "arm_cortex-a9", "arm_cortex-a9_neon",
+          "arm_cortex-a9_vfpv3-d16", "arm_cortex-a15_neon-vfpv4", "mips_24kc",
+          "mips_4kec", "mips_mips32", "mipsel_24kc", "mipsel_74kc", "mipsel_mips32"
+        ]
+        include:
+          - arch: "x86_64"
+            url_sdk: "https://downloads.openwrt.org/releases/21.02.0/targets/x86/64/openwrt-21.02.0-x86-64-generic-squashfs.img.gz"
+          - arch: "aarch64_generic"
+            url_sdk: "https://downloads.openwrt.org/releases/21.02.0/targets/aarch64/generic/openwrt-21.02.0-aarch64-generic-squashfs.img.gz"
+          - arch: "aarch64_cortex-a53"
+            url_sdk: "https://downloads.openwrt.org/releases/21.02.0/targets/aarch64/cortex-a53/openwrt-21.02.0-aarch64-cortex-a53-squashfs.img.gz"
+          - arch: "aarch64_cortex-a72"
+            url_sdk: "https://downloads.openwrt.org/releases/21.02.0/targets/aarch64/cortex-a72/openwrt-21.02.0-aarch64-cortex-a72-squashfs.img.gz"
+          - arch: "arm_cortex-a5_vfpv4"
+            url_sdk: "https://downloads.openwrt.org/releases/21.02.0/targets/arm_cortex-a5_vfpv4/openwrt-21.02.0-arm_cortex-a5_vfpv4-squashfs.img.gz"
+          - arch: "arm_cortex-a7"
+            url_sdk: "https://downloads.openwrt.org/releases/21.02.0/targets/arm_cortex-a7/openwrt-21.02.0-arm_cortex-a7-squashfs.img.gz"
+          - arch: "arm_cortex-a7_neon-vfpv4"
+            url_sdk: "https://downloads.openwrt.org/releases/21.02.0/targets/arm_cortex-a7_neon-vfpv4/openwrt-21.02.0-arm_cortex-a7_neon-vfpv4-squashfs.img.gz"
+          - arch: "arm_cortex-a8_vfpv3"
+            url_sdk: "https://downloads.openwrt.org/releases/21.02.0/targets/arm_cortex-a8_vfpv3/openwrt-21.02.0-arm_cortex-a8_vfpv3-squashfs.img.gz"
+          - arch: "arm_cortex-a9"
+            url_sdk: "https://downloads.openwrt.org/releases/21.02.0/targets/arm_cortex-a9/openwrt-21.02.0-arm_cortex-a9-squashfs.img.gz"
+          - arch: "arm_cortex-a9_neon"
+            url_sdk: "https://downloads.openwrt.org/releases/21.02.0/targets/arm_cortex-a9_neon/openwrt-21.02.0-arm_cortex-a9_neon-squashfs.img.gz"
+          - arch: "arm_cortex-a9_vfpv3-d16"
+            url_sdk: "https://downloads.openwrt.org/releases/21.02.0/targets/arm_cortex-a9_vfpv3-d16/openwrt-21.02.0-arm_cortex-a9_vfpv3-d16-squashfs.img.gz"
+          - arch: "arm_cortex-a15_neon-vfpv4"
+            url_sdk: "https://downloads.openwrt.org/releases/21.02.0/targets/arm_cortex-a15_neon-vfpv4/openwrt-21.02.0-arm_cortex-a15_neon-vfpv4-squashfs.img.gz"
+          - arch: "mips_24kc"
+            url_sdk: "https://downloads.openwrt.org/releases/21.02.0/targets/mips/24kc/openwrt-21.02.0-mips-24kc-squashfs.img.gz"
+          - arch: "mips_4kec"
+            url_sdk: "https://downloads.openwrt.org/releases/21.02.0/targets/mips/4kec/openwrt-21.02.0-mips-4kec-squashfs.img.gz"
+          - arch: "mips_mips32"
+            url_sdk: "https://downloads.openwrt.org/releases/21.02.0/targets/mips/mips32/openwrt-21.02.0-mips-mips32-squashfs.img.gz"
+          - arch: "mipsel_24kc"
+            url_sdk: "https://downloads.openwrt.org/releases/21.02.0/targets/mipsel/24kc/openwrt-21.02.0-mipsel-24kc-squashfs.img.gz"
+          - arch: "mipsel_74kc"
+            url_sdk: "https://downloads.openwrt.org/releases/21.02.0/targets/mipsel/74kc/openwrt-21.02.0-mipsel-74kc-squashfs.img.gz"
+          - arch: "mipsel_mips32"
+            url_sdk: "https://downloads.openwrt.org/releases/21.02.0/targets/mipsel/mips32/openwrt-21.02.0-mipsel-mips32-squashfs.img.gz"
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Setup SDK
-        run: |
-          mkdir -p sdk
-          cd sdk
-          # Use the correct URL based on architecture
-          SDK_URL="${{ matrix.sdk_urls[matrix.architecture] }}"
-          curl -fsSL -o sdk.tar.xz $SDK_URL
-          tar -xf sdk.tar.xz
-          rm sdk.tar.xz
-          cd ..
+      - name: Checkout
+        uses: actions/checkout@main
+        with:
+          fetch-depth: 0
+          ref: 'main'
 
       - name: Install packages
         run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential clang flex bison g++ gawk gcc-multilib g++-multilib gettext git libncurses-dev libssl-dev python3-distutils python3-setuptools rsync swig unzip zlib1g-dev file wget
+          echo "Install packages"
+          sudo -E apt-get -qq update
+          sudo -E apt-get -qq install build-essential clang flex bison g++ gawk gcc-multilib g++-multilib gettext git libncurses5-dev libssl-dev python3 python3-venv rsync unzip zlib1g-dev file wget
+          sudo -E apt-get -qq autoremove --purge
+          sudo -E apt-get -qq clean
+
+      - name: Cache openwrt SDK
+        id: cache-sdk
+        uses: actions/cache@v3
+        with:
+          path: sdk
+          key: openwrt-sdk-21.02.0-${{ matrix.arch }}
+
+      - name: Initialization environment
+        if: steps.cache-sdk.outputs.cache-hit != 'true'
+        env:
+          url_sdk: ${{ matrix.url_sdk }}
+        run: |
+          wget ${{ env.url_sdk }}
+          file_name=$(echo ${{env.url_sdk}} | awk -F/ '{print $NF}')
+          mkdir sdk && tar -xJf $file_name -C ./sdk --strip-components=1
+          cd sdk  
+          echo "src-git base https://github.com/openwrt/openwrt.git;openwrt-21.02" > feeds.conf
+          echo "src-git-full packages https://github.com/openwrt/packages.git;openwrt-21.02" >> feeds.conf
+          echo "src-git-full luci https://git.openwrt.org/project/luci.git;openwrt-21.02" >> feeds.conf
+          echo "src-git-full routing https://git.openwrt.org/feed/routing.git;openwrt-21.02"  >> feeds.conf
+          git clone -b main https://github.com/${{ github.repository }}.git package/downloads/luci-app-themeswitch
+          ./scripts/feeds update -a
+          echo "CONFIG_PACKAGE_luci-app-themeswitch=m" > .config
+          echo "CONFIG_LUCI_JSMIN=n" >> .config
+          echo "CONFIG_LUCI_CSSTIDY=n" >> .config
+          ./scripts/feeds install -d n luci-app-themeswitch
+          make download -j8
 
       - name: Configure IPK
         run: |
@@ -77,7 +123,7 @@ jobs:
           cd sdk
           echo "make package/luci-app-themeswitch/{clean,compile} -j$(nproc)"
           make package/luci-app-themeswitch/{clean,compile} -j$(nproc)
-          mv bin/packages/${{ matrix.architecture }}/base/ ../
+          mv bin/packages/${{ matrix.arch }}/base/ ../
           rm .config .config.old
           cd ..
           echo "status=success" >> $GITHUB_OUTPUT
