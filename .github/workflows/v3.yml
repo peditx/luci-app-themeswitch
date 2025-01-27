@@ -16,7 +16,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.check_version.outputs.latest_version }}
-      has_update: ${{ steps.check_version.outputs.has_update }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -27,20 +26,24 @@ jobs:
           url_release: https://api.github.com/repos/${{ github.repository }}/releases/latest
         run: |
           latest_version=$(grep -oP 'PKG_VERSION:=\K.*' Makefile | sed 's/^/v/')
-          latest_release=$(wget -qO- -t1 -T2 ${{env.url_release}} | awk -F '"' '/tag_name/{print $4}')
-          has_update=$([ "${latest_version}" != "${latest_release}" ] && echo true || echo false)
           echo "latest_version=${latest_version}" >> $GITHUB_OUTPUT
-          echo "has_update=${has_update}" >> $GITHUB_OUTPUT
-
-      - name: Log version information
-        run: |
-          echo "Latest Version: ${{ steps.check_version.outputs.latest_version }}"
-          echo "Has Update: ${{ steps.check_version.outputs.has_update }}"
 
   job_build:
     name: Build OpenWRT
     runs-on: ubuntu-latest
+    needs: job_check
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Create Git Tag
+        id: create_tag
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git tag ${{ needs.job_check.outputs.version }}
+          git push origin ${{ needs.job_check.outputs.version }}
+
       - name: Install packages
         run: |
           sudo -E apt-get -qq update
