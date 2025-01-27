@@ -46,11 +46,11 @@ jobs:
 
       - name: Pull OpenWrt SDK Docker image
         run: |
-          docker pull openwrtorg/sdk:23.05.0
+          docker pull openwrt/sdk:${{ matrix.arch }}-openwrt-23.05
 
       - name: Build for ${{ matrix.arch }}
         run: |
-          docker run --rm -v $(pwd):/workspace -w /workspace openwrtorg/sdk:23.05.0 /bin/bash -c "
+          docker run --rm -v $(pwd):/workspace -w /workspace openwrt/sdk:${{ matrix.arch }}-openwrt-23.05 /bin/bash -c "
             git clone https://github.com/peditx/luci-app-themeswitch package/luci-app-themeswitch &&
             echo 'CONFIG_PACKAGE_luci-app-themeswitch=m' >> .config &&
             ./scripts/feeds update -a &&
@@ -82,7 +82,7 @@ jobs:
         with:
           tag_name: $(date +'%Y-%m-%d')
           release_name: Release $(date +'%Y-%m-%d')
-          body: "نسخه آخر نرم‌افزار با پشتیبانی از ۱۷ معماری OpenWrt (v23.05)"
+          body: "Latest version of the software with support for 17 OpenWrt architectures (v23.05)"
           draft: false
           prerelease: false
 
