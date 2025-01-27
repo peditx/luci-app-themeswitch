@@ -42,7 +42,7 @@ jobs:
         if: steps.check_version.outputs.has_update == 'true'
         uses: softprops/action-gh-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
         with:
           name: luci-app-themeswitch
           tag_name: ${{steps.check_version.outputs.latest_version}}
