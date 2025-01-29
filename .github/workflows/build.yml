@@ -24,20 +24,12 @@ jobs:
           fetch-depth: 0
           ref: 'main'
 
-      - name: Install js-yaml
+      - name: Read SDK URLs from conf file
+        id: read-conf
         run: |
-          npm install js-yaml
-
-      - name: Read SDK URLs from YAML
-        id: read-yaml
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const fs = require('fs');
-            const yaml = require('js-yaml');
-            const content = fs.readFileSync('sdk_url.yml', 'utf8');
-            const data = yaml.load(content);
-            return { content: JSON.stringify(data) };
+          while IFS='=' read -r key value; do
+            echo "$key=$value" >> $GITHUB_ENV
+          done < sdk_url.conf
 
       - name: Install packages
         run: |
@@ -57,7 +49,7 @@ jobs:
       - name: Initialization environment
         if: steps.cache-sdk.outputs.cache-hit != 'true'
         env:
-          url_sdk: ${{ fromJson(steps.read-yaml.outputs.content)[matrix.arch] }}  # استفاده از لینک SDK مربوط به معماری
+          url_sdk: ${{ env[matrix.arch] }}  # استفاده از لینک SDK مربوط به معماری
         run: |
           wget ${{ env.url_sdk }}
           file_name=$(echo ${{env.url_sdk}} | awk -F/ '{print $NF}')
