@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        arch: ${{ fromJson(format('[{0}]', join(',', keys(fromJson(steps.read-yaml.outputs.content))))) }}  # خواندن کلیدهای معماری‌ها از فایل YAML
+        arch: ["x86_64", "aarch64_generic", "aarch64_cortex-a53", "aarch64_cortex-a72", "arm_cortex-a5_vfpv4", "arm_cortex-a7", "arm_cortex-a7_neon-vfpv4", "arm_cortex-a8_vfpv3", "arm_cortex-a9", "arm_cortex-a9_neon", "arm_cortex-a9_vfpv3-d16", "arm_cortex-a15_neon-vfpv4", "mips_24kc", "mips_4kec", "mips_mips32", "mipsel_24kc", "mipsel_74kc", "mipsel_mips32"]
     steps:
       - name: Checkout
         uses: actions/checkout@main
