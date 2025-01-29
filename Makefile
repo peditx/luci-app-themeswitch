@@ -1,13 +1,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=luci-app-themeswitch
-PKG_RELEASE:=1
+PKG_RELEASE:=1.0.3
 ARCH:=all
 
 LUCI_TITLE:=Theme Switch
 LUCI_DEPENDS:=+luci-base
 
-PKG_MAINTAINER:=Your Name <your.email@example.com>
+PKG_MAINTAINER:=PeDitX <t.me/peditx>
 PKG_LICENSE:=GPL-3.0
 
 include $(INCLUDE_DIR)/package.mk
