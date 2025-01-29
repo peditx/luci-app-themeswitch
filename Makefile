@@ -2,7 +2,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=luci-app-themeswitch
 PKG_RELEASE:=1
-PKGARCH:=all
+ARCH:=all
 
 LUCI_TITLE:=Theme Switch
 LUCI_DEPENDS:=+luci-base
