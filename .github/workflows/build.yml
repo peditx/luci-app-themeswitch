@@ -24,6 +24,10 @@ jobs:
           fetch-depth: 0
           ref: 'main'
 
+      - name: Install js-yaml
+        run: |
+          npm install js-yaml
+
       - name: Read SDK URLs from YAML
         id: read-yaml
         uses: actions/github-script@v6
