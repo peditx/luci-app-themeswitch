@@ -1,4 +1,4 @@
-name: "Build IPK"
+name: "make IPK"
 on:
   repository_dispatch:
   workflow_dispatch:
